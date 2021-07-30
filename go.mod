@@ -40,3 +40,5 @@ replace (
 )
 
 go 1.11
+
+replace github.com/firecracker-microvm/firecracker-go-sdk => github.com/electriklab/firecracker-go-sdk v0.22.1-0.20210730133206-1e1ba66ed085

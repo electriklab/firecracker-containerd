@@ -1,6 +1,8 @@
 syntax = "proto3";
 
 import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
+
 //import weak "gogoproto/gogo.proto";
 
 option go_package = "proto";
@@ -61,6 +63,11 @@ message CNIConfiguration {
 	// Args corresponds to the CNI_ARGS parameter that will be provided to
 	// CNI plugins on invocation.
 	repeated CNIArg Args = 6;
+
+	// CapabilityArgs is a dictionary of capability-specific
+	// data passed by the runtime to plugins as top-level keys in the
+	// 'runtimeConfig' dictionary of the plugin's stdin data.
+	google.protobuf.Struct CapabilityArgs = 7;
 }
 
 // Message to specify static configuration parameters for a
@@ -141,7 +148,7 @@ message FirecrackerDriveMount {
   string FilesystemType = 3;
 
   // (Optional) Options are fstab-style options that the mount will be performed
-  // within the VM (i.e. ["rw", "noatime"]). Defaults to none if not specified. 
+  // within the VM (i.e. ["rw", "noatime"]). Defaults to none if not specified.
   repeated string Options = 4;
 
   // (Optional) RateLimiter configuration that will be applied to the

@@ -23,6 +23,7 @@ import (
 
 	"github.com/firecracker-microvm/firecracker-containerd/config"
 	"github.com/firecracker-microvm/firecracker-containerd/proto"
+	pbstruct "github.com/golang/protobuf/ptypes/struct"
 )
 
 const (
@@ -163,15 +164,39 @@ func TestNetworkConfigFromProto_CNI(t *testing.T) {
 		},
 	}
 
+	capArgs := &pbstruct.Struct{
+		Fields: map[string]*pbstruct.Value{
+			"portMappings": {
+				Kind: &pbstruct.Value_ListValue{
+					ListValue: &pbstruct.ListValue{
+						Values: []*pbstruct.Value{
+							{
+								Kind: &pbstruct.Value_StructValue{
+									StructValue: &pbstruct.Struct{
+										Fields: map[string]*pbstruct.Value{
+											"hostPort":      {Kind: &pbstruct.Value_StringValue{StringValue: "8080"}},
+											"containerPort": {Kind: &pbstruct.Value_StringValue{StringValue: "80"}},
+											"protocol":      {Kind: &pbstruct.Value_StringValue{StringValue: "tcp"}},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 	network, err := networkConfigFromProto(&proto.FirecrackerNetworkInterface{
 		AllowMMDS: true,
 		CNIConfig: &proto.CNIConfiguration{
-			NetworkName:   networkName,
-			InterfaceName: ifName,
-			ConfDir:       cniConfDir,
-			CacheDir:      cniCacheDir,
-			BinPath:       cniBinPath,
-			Args:          inputArgs,
+			NetworkName:    networkName,
+			InterfaceName:  ifName,
+			ConfDir:        cniConfDir,
+			CacheDir:       cniCacheDir,
+			BinPath:        cniBinPath,
+			Args:           inputArgs,
+			CapabilityArgs: capArgs,
 		},
 	}, vmID)
 	require.NoError(t, err, "failed to parse CNI network config from proto")
@@ -192,6 +217,16 @@ func TestNetworkConfigFromProto_CNI(t *testing.T) {
 		assert.Equal(t, inputArg.Key, outputArg[0])
 		assert.Equal(t, inputArg.Value, outputArg[1])
 	}
+
+	require.Equal(t, network.CNIConfiguration.CapabilityArgs, map[string]interface{}{
+		"portMappings": []interface{}{
+			map[string]interface{}{
+				"hostPort":      "8080",
+				"containerPort": "80",
+				"protocol":      "tcp",
+			},
+		},
+	})
 }
 
 func TestTokenBucketFromProto(t *testing.T) {
