@@ -24,6 +24,8 @@ import (
 
 	"github.com/firecracker-microvm/firecracker-containerd/config"
 	"github.com/firecracker-microvm/firecracker-containerd/proto"
+
+	pbstruct "github.com/golang/protobuf/ptypes/struct"
 )
 
 const (
@@ -100,11 +102,12 @@ func networkConfigFromProto(nwIface *proto.FirecrackerNetworkInterface, vmID str
 
 	if cniConf := nwIface.CNIConfig; cniConf != nil {
 		result.CNIConfiguration = &firecracker.CNIConfiguration{
-			NetworkName: cniConf.NetworkName,
-			IfName:      cniConf.InterfaceName,
-			BinPath:     cniConf.BinPath,
-			ConfDir:     cniConf.ConfDir,
-			CacheDir:    cniConf.CacheDir,
+			NetworkName:    cniConf.NetworkName,
+			IfName:         cniConf.InterfaceName,
+			BinPath:        cniConf.BinPath,
+			ConfDir:        cniConf.ConfDir,
+			CacheDir:       cniConf.CacheDir,
+			CapabilityArgs: decodeToMap(cniConf.CapabilityArgs),
 		}
 
 		for _, cniArg := range cniConf.Args {
@@ -164,4 +167,44 @@ func tokenBucketFromProto(bucket *proto.FirecrackerTokenBucket) *models.TokenBuc
 
 	res := builder.Build()
 	return &res
+}
+
+// --------------------------------------------------------------------------------------------------------------------------
+// decodeToMap is copied from https://github.com/googleapis/google-cloud-go/blob/master/internal/protostruct/protostruct.go
+// with minor modifications
+// --------------------------------------------------------------------------------------------------------------------------
+// decodeToMap converts a pbstruct.Struct to a map from strings to Go types.
+// decodeToMap panics if s is invalid.
+func decodeToMap(s *pbstruct.Struct) map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	m := map[string]interface{}{}
+	for k, v := range s.Fields {
+		m[k] = decodeValue(v)
+	}
+	return m
+}
+
+func decodeValue(v *pbstruct.Value) interface{} {
+	switch k := v.Kind.(type) {
+	case *pbstruct.Value_NullValue:
+		return nil
+	case *pbstruct.Value_NumberValue:
+		return k.NumberValue
+	case *pbstruct.Value_StringValue:
+		return k.StringValue
+	case *pbstruct.Value_BoolValue:
+		return k.BoolValue
+	case *pbstruct.Value_StructValue:
+		return decodeToMap(k.StructValue)
+	case *pbstruct.Value_ListValue:
+		s := make([]interface{}, len(k.ListValue.Values))
+		for i, e := range k.ListValue.Values {
+			s[i] = decodeValue(e)
+		}
+		return s
+	default:
+		panic("protostruct: unknown kind")
+	}
 }
