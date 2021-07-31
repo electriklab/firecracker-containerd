@@ -238,6 +238,10 @@ FIREWALL_BIN?=$(BINPATH)/firewall
 $(FIREWALL_BIN):
 	GOBIN=$(dir $@) GO111MODULE=off go get -u github.com/containernetworking/plugins/plugins/meta/firewall
 
+PORTMAP_BIN?=$(BINPATH)/portmap
+$(PORTMAP_BIN):
+	GOBIN=$(dir $@) GO111MODULE=off go get -u github.com/containernetworking/plugins/plugins/meta/portmap
+
 TC_REDIRECT_TAP_BIN?=$(BINPATH)/tc-redirect-tap
 $(TC_REDIRECT_TAP_BIN):
 	GOBIN=$(dir $@) go install github.com/awslabs/tc-redirect-tap/cmd/tc-redirect-tap
@@ -247,7 +251,7 @@ $(TEST_BRIDGED_TAP_BIN): $(shell find internal/cmd/test-bridged-tap -name *.go) 
 	go build -o $@ $(CURDIR)/internal/cmd/test-bridged-tap
 
 .PHONY: cni-bins
-cni-bins: $(BRIDGE_BIN) $(PTP_BIN) $(HOSTLOCAL_BIN) $(FIREWALL_BIN) $(TC_REDIRECT_TAP_BIN)
+cni-bins: $(BRIDGE_BIN) $(PTP_BIN) $(HOSTLOCAL_BIN) $(FIREWALL_BIN) $(TC_REDIRECT_TAP_BIN) $(PORTMAP_BIN)
 
 .PHONY: test-cni-bins
 test-cni-bins: $(TEST_BRIDGED_TAP_BIN)
@@ -259,6 +263,7 @@ install-cni-bins: cni-bins $(CNI_BIN_ROOT)
 	install -D -o root -g root -m755 -t $(CNI_BIN_ROOT) $(HOSTLOCAL_BIN)
 	install -D -o root -g root -m755 -t $(CNI_BIN_ROOT) $(FIREWALL_BIN)
 	install -D -o root -g root -m755 -t $(CNI_BIN_ROOT) $(TC_REDIRECT_TAP_BIN)
+	install -D -o root -g root -m755 -t $(CNI_BIN_ROOT) $(PORTMAP_BIN)
 
 .PHONY: install-test-cni-bins
 install-test-cni-bins: test-cni-bins $(CNI_BIN_ROOT)
