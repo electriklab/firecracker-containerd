@@ -49,6 +49,10 @@ func machineConfigurationFromProto(cfg *config.Config, req *proto.FirecrackerMac
 		config.CPUTemplate = models.CPUTemplate(name)
 	}
 
+	if cfg.DisableCPUTemplate {
+		config.CPUTemplate = models.CPUTemplate("")
+	}
+
 	if count := req.VcpuCount; count > 0 {
 		config.VcpuCount = firecracker.Int64(int64(count))
 	}

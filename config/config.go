@@ -45,6 +45,7 @@ type Config struct {
 	KernelImagePath       string   `json:"kernel_image_path"`
 	KernelArgs            string   `json:"kernel_args"`
 	RootDrive             string   `json:"root_drive"`
+	DisableCPUTemplate    bool     `json:"disable_cpu_template"`
 	CPUTemplate           string   `json:"cpu_template"`
 	LogLevels             []string `json:"log_levels"`
 	HtEnabled             bool     `json:"ht_enabled"`

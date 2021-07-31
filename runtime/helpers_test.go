@@ -100,6 +100,21 @@ func TestMachineConfigurationFromProto(t *testing.T) {
 				HtEnabled:   firecracker.Bool(true),
 			},
 		},
+		{
+			name: "DisableCPUTemplate",
+			config: &config.Config{
+				DisableCPUTemplate: true,
+			},
+			proto: &proto.FirecrackerMachineConfiguration{
+				CPUTemplate: string(models.CPUTemplateC3),
+			},
+			expectedMachineConfig: models.MachineConfiguration{
+				CPUTemplate: "",
+				VcpuCount:   firecracker.Int64(defaultCPUCount),
+				MemSizeMib:  firecracker.Int64(defaultMemSizeMb),
+				HtEnabled:   firecracker.Bool(false),
+			},
+		},
 	}
 
 	for _, tc := range testcases {
