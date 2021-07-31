@@ -57,6 +57,13 @@ fi
 
 do_overlay
 
+if [ -z "${microvm_hostname}" ]; then
+    echo "${microvm_hostname} is not provided"
+else
+    echo "Injecting hostname ${microvm_hostname} into /etc/hostname"
+    echo "${microvm_hostname}" > /etc/hostname
+fi
+
 # invoke the actual system init program and procede with the boot
 # process.
 exec /usr/sbin/init $@
