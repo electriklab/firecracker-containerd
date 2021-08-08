@@ -41,16 +41,18 @@ func machineConfigurationFromProto(cfg *config.Config, req *proto.FirecrackerMac
 		HtEnabled:   firecracker.Bool(cfg.HtEnabled),
 	}
 
+	if cfg.DisableCPUTemplate {
+		config.CPUTemplate = models.CPUTemplate("")
+	}
+
 	if req == nil {
 		return config
 	}
 
-	if name := req.CPUTemplate; name != "" {
-		config.CPUTemplate = models.CPUTemplate(name)
-	}
-
-	if cfg.DisableCPUTemplate {
-		config.CPUTemplate = models.CPUTemplate("")
+	if !cfg.DisableCPUTemplate {
+		if name := req.CPUTemplate; name != "" {
+			config.CPUTemplate = models.CPUTemplate(name)
+		}
 	}
 
 	if count := req.VcpuCount; count > 0 {
