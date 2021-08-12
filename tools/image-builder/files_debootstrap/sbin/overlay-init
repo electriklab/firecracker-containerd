@@ -58,10 +58,22 @@ fi
 do_overlay
 
 if [ -z "${microvm_hostname}" ]; then
-    echo "${microvm_hostname} is not provided"
+    echo '$microvm_hostname is not provided'
 else
     echo "Injecting hostname ${microvm_hostname} into /etc/hostname"
     echo "${microvm_hostname}" > /etc/hostname
+fi
+
+mkdir -p /root/.ssh
+chmod 0700 /root/.ssh
+
+if [ -z "${ssh_key}" ]; then
+    echo "$ssh_key is not provided"
+else
+    ssh_key_decoded=$(echo $ssh_key | base64 --decode)
+    echo "Injecting ssh key into /root/.ssh/authorized_keys"
+    echo "${ssh_key_decoded}" > /root/.ssh/authorized_keys
+    chmod 0440 /root/.ssh/authorized_keys
 fi
 
 # invoke the actual system init program and procede with the boot

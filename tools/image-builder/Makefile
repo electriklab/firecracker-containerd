@@ -55,7 +55,7 @@ ifneq ($(UID),0)
 endif
 	debootstrap \
 		--variant=minbase \
-		--include=udev,systemd,systemd-sysv,procps,libseccomp2,haveged \
+		--include=udev,systemd,systemd-sysv,procps,libseccomp2,haveged,openssh-server \
 		buster \
 		"$(WORKDIR)" $(DEBMIRROR)
 	rm -rf "$(WORKDIR)/var/cache/apt/archives" \
@@ -65,7 +65,10 @@ endif
 	touch $@
 
 rootfs.img: files_common_stamp files_debootstrap_stamp files_ephemeral_stamp
-	mksquashfs "$(WORKDIR)" rootfs.img -noappend
+	rm -fr tmp/$@
+	cp -a "$(WORKDIR)" tmp/$@
+	echo 'PermitRootLogin yes' >> tmp/$@/etc/ssh/sshd_config
+	mksquashfs tmp/$@ $@ -noappend
 
 # Intentionally break the rootfs to simulate the case where CreateVM is taking longer than the minimal timeout
 rootfs-slow-boot.img: files_common_stamp files_debootstrap_stamp files_ephemeral_stamp
